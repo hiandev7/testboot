@@ -53,14 +53,16 @@
   };
 
   const updateParallax = (progress) => {
-    const isMobile = window.innerWidth <= 650;
+    const isMobile =
+      window.innerWidth <= 650;
 
     depthItems.forEach((item) => {
       const depth = Number(
         item.dataset.depth || 0
       );
 
-      const multiplier = isMobile ? 0.3 : 1;
+      const multiplier =
+        isMobile ? 0.3 : 1;
 
       const offset =
         (progress - 0.5) *
@@ -78,15 +80,22 @@
 
   const updateInterface = () => {
     const progress = getProgress();
-    const percentage = Math.round(progress * 100);
+
+    const percentage =
+      Math.round(
+        progress * 100
+      );
 
     if (progressFill) {
-      progressFill.style.height = `${percentage}%`;
+      progressFill.style.height =
+        `${percentage}%`;
     }
 
     if (progressValue) {
       progressValue.textContent =
-        `${String(percentage).padStart(2, "0")}%`;
+        `${String(
+          percentage
+        ).padStart(2, "0")}%`;
     }
 
     if (header) {
@@ -127,27 +136,37 @@
       return;
     }
 
-    const easing = reducedMotion ? 1 : 0.1;
+    const easing =
+      reducedMotion
+        ? 1
+        : 0.1;
 
-    renderedTime = lerp(
-      renderedTime,
-      targetTime,
-      easing
-    );
+    renderedTime =
+      lerp(
+        renderedTime,
+        targetTime,
+        easing
+      );
 
-    const nextTime = clamp(
-      renderedTime,
-      0,
-      Math.max(duration - 0.03, 0)
-    );
+    const nextTime =
+      clamp(
+        renderedTime,
+        0,
+        Math.max(
+          duration - 0.03,
+          0
+        )
+      );
 
     if (
       Math.abs(
-        video.currentTime - nextTime
+        video.currentTime -
+          nextTime
       ) > 0.015
     ) {
       try {
-        video.currentTime = nextTime;
+        video.currentTime =
+          nextTime;
       } catch (error) {
       }
     }
@@ -155,7 +174,8 @@
     if (
       !reducedMotion &&
       Math.abs(
-        targetTime - renderedTime
+        targetTime -
+          renderedTime
       ) > 0.01
     ) {
       scheduleVideo();
@@ -237,14 +257,18 @@
       "loadedmetadata",
       () => {
         if (
-          !Number.isFinite(video.duration) ||
+          !Number.isFinite(
+            video.duration
+          ) ||
           video.duration <= 0
         ) {
           showFallback();
           return;
         }
 
-        duration = video.duration;
+        duration =
+          video.duration;
+
         videoReady = true;
         videoHasError = false;
 
@@ -259,8 +283,11 @@
         }
 
         hideFallback();
+
         pauseVideo();
+
         updateInterface();
+
         scheduleVideo();
       }
     );
@@ -271,11 +298,15 @@
         pauseVideo();
 
         if (
-          Number.isFinite(video.duration) &&
+          Number.isFinite(
+            video.duration
+          ) &&
           video.duration > 0 &&
           !videoReady
         ) {
-          duration = video.duration;
+          duration =
+            video.duration;
+
           videoReady = true;
 
           if (stage) {
@@ -285,7 +316,9 @@
           }
 
           hideFallback();
+
           updateInterface();
+
           scheduleVideo();
         }
       }
@@ -319,10 +352,14 @@
 
     if (
       video.readyState >= 1 &&
-      Number.isFinite(video.duration) &&
+      Number.isFinite(
+        video.duration
+      ) &&
       video.duration > 0
     ) {
-      duration = video.duration;
+      duration =
+        video.duration;
+
       videoReady = true;
 
       if (stage) {
@@ -332,6 +369,7 @@
       }
 
       updateInterface();
+
       scheduleVideo();
     }
   };
@@ -343,13 +381,18 @@
 
     if (
       reducedMotion ||
-      !("IntersectionObserver" in window)
+      !(
+        "IntersectionObserver"
+        in window
+      )
     ) {
-      revealItems.forEach((item) => {
-        item.classList.add(
-          "is-visible"
-        );
-      });
+      revealItems.forEach(
+        (item) => {
+          item.classList.add(
+            "is-visible"
+          );
+        }
+      );
 
       return;
     }
@@ -357,21 +400,23 @@
     const observer =
       new IntersectionObserver(
         (entries, instance) => {
-          entries.forEach((entry) => {
-            if (
-              !entry.isIntersecting
-            ) {
-              return;
+          entries.forEach(
+            (entry) => {
+              if (
+                !entry.isIntersecting
+              ) {
+                return;
+              }
+
+              entry.target.classList.add(
+                "is-visible"
+              );
+
+              instance.unobserve(
+                entry.target
+              );
             }
-
-            entry.target.classList.add(
-              "is-visible"
-            );
-
-            instance.unobserve(
-              entry.target
-            );
-          });
+          );
         },
         {
           threshold: 0.05,
@@ -380,21 +425,55 @@
         }
       );
 
-    revealItems.forEach((item) => {
-      observer.observe(item);
-    });
+    revealItems.forEach(
+      (item) => {
+        observer.observe(item);
+      }
+    );
+  };
+
+  let resizeTimer = null;
+
+  const handleResize = () => {
+    if (resizeTimer) {
+      window.clearTimeout(
+        resizeTimer
+      );
+    }
+
+    resizeTimer =
+      window.setTimeout(
+        () => {
+          updateInterface();
+
+          if (
+            animationFrame !== null
+          ) {
+            window.cancelAnimationFrame(
+              animationFrame
+            );
+
+            animationFrame = null;
+          }
+
+          scheduleVideo();
+        },
+        80
+      );
   };
 
   html.classList.add(
     "js-ready"
   );
 
-  depthItems.forEach((item) => {
-    item.style.setProperty(
-      "--scroll-depth",
-      "0px"
-    );
-  });
+  depthItems.forEach(
+    (item) => {
+      item.style.setProperty(
+        "--scroll-depth",
+        "0px"
+      );
+    }
+  );
 
   initializeReveal();
   initializeVideo();
@@ -409,7 +488,7 @@
 
   window.addEventListener(
     "resize",
-    updateInterface,
+    handleResize,
     {
       passive: true
     }
