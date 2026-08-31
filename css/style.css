@@ -1960,8 +1960,13 @@ footer {
   --reveal-y: 30px;
 
   opacity: 0;
-
   filter: blur(9px);
+
+  transform: translate3d(
+    0,
+    calc(var(--reveal-y) + var(--scroll-depth, 0px)),
+    0
+  );
 
   transition:
     opacity 850ms cubic-bezier(.2, .8, .2, 1),
@@ -1973,8 +1978,13 @@ footer {
   --reveal-y: 0px;
 
   opacity: 1;
-
   filter: blur(0);
+
+  transform: translate3d(
+    0,
+    var(--scroll-depth, 0px),
+    0
+  );
 }
 
 
