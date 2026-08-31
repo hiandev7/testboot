@@ -1,757 +1,566 @@
 (() => {
-  "use strict";
+"use strict";
 
-  /* =========================================================
-     ATIVAÇÃO SEGURA DO JAVASCRIPT
-  ========================================================== */
+/* =========================================================
+CLEANBOT — SCRIPT PRINCIPAL
+========================================================== */
 
-  /*
-    A classe fica no <html>.
+/*
+IMPORTANTE:
+O conteúdo permanece visível por padrão no CSS.
+Esta classe apenas ativa as animações quando o JS
+realmente carregou.
+*/
 
-    Isso permite ao CSS usar:
+document.documentElement.classList.add("js-ready");
 
-    .js-ready .reveal
+/* =========================================================
+ELEMENTOS
+========================================================== */
 
-    Se o JavaScript não carregar, essa classe não existe
-    e o conteúdo permanece visível.
-  */
+const video = document.querySelector("#experience-video");
+const stage = document.querySelector(".video-stage");
+const fallback = document.querySelector("#video-fallback");
 
-  document.documentElement.classList.add("js-ready");
+const progressFill =
+document.querySelector("#progress-fill");
 
+const progressValue =
+document.querySelector("#progress-value");
 
-  /* =========================================================
-     ELEMENTOS
-  ========================================================== */
+const header =
+document.querySelector(".site-header");
 
-  const video =
-    document.querySelector("#experience-video");
+const depthItems = Array.from(
+document.querySelectorAll("[data-depth]")
+);
 
-  const stage =
-    document.querySelector(".video-stage");
+const revealItems = Array.from(
+document.querySelectorAll(".reveal")
+);
 
-  const fallback =
-    document.querySelector("#video-fallback");
+/* =========================================================
+REDUÇÃO DE MOVIMENTO
+========================================================== */
 
-  const progressFill =
-    document.querySelector("#progress-fill");
+const reducedMotionQuery = window.matchMedia(
+"(prefers-reduced-motion: reduce)"
+);
 
-  const progressValue =
-    document.querySelector("#progress-value");
+let reducedMotion = reducedMotionQuery.matches;
 
-  const header =
-    document.querySelector(".site-header");
+if (reducedMotionQuery.addEventListener) {
+reducedMotionQuery.addEventListener(
+"change",
+(event) => {
+reducedMotion = event.matches;
+}
+);
+}
 
-  const depthItems = [
-    ...document.querySelectorAll("[data-depth]")
-  ];
+/* =========================================================
+ESTADO
+========================================================== */
 
-  const revealItems = [
-    ...document.querySelectorAll(".reveal")
-  ];
+let duration = 0;
+let targetTime = 0;
+let renderedTime = 0;
 
-  const reducedMotion =
-    window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
+let scrollProgress = 0;
 
+let animationFrame = null;
+let metadataReady = false;
 
-  /* =========================================================
-     ESTADO
-  ========================================================== */
+/* =========================================================
+UTILITÁRIOS
+========================================================== */
 
-  let duration = 0;
+const clamp = (value, min, max) =>
+Math.min(Math.max(value, min), max);
 
-  let targetTime = 0;
+const lerp = (start, end, amount) =>
+start + (end - start) * amount;
 
-  let renderedTime = 0;
+/* =========================================================
+PROGRESSO DA PÁGINA
+========================================================== */
 
-  let scrollProgress = 0;
+function calculateProgress() {
+const scrollHeight =
+document.documentElement.scrollHeight;
 
-  let animationFrame = null;
+```
+const viewportHeight =
+  window.innerHeight;
 
-  let metadataReady = false;
+const distance =
+  Math.max(
+    scrollHeight - viewportHeight,
+    1
+  );
 
+return clamp(
+  window.scrollY / distance,
+  0,
+  1
+);
+```
 
-  /* =========================================================
-     UTILITÁRIOS
-  ========================================================== */
+}
 
-  const clamp = (
-    value,
-    min,
-    max
-  ) =>
-    Math.min(
-      Math.max(value, min),
-      max
+/* =========================================================
+INTERFACE
+========================================================== */
+
+function updateInterface() {
+scrollProgress =
+calculateProgress();
+
+```
+const percentage =
+  Math.round(
+    scrollProgress * 100
+  );
+
+/* PROGRESSO */
+
+if (progressFill) {
+  progressFill.style.height =
+    `${percentage}%`;
+}
+
+if (progressValue) {
+  progressValue.textContent =
+    `${String(percentage).padStart(2, "0")}%`;
+}
+
+/* HEADER */
+
+if (header) {
+  header.classList.toggle(
+    "is-scrolled",
+    window.scrollY > 24
+  );
+}
+
+/* PARALLAX */
+
+depthItems.forEach((item) => {
+  const depth =
+    Number(
+      item.dataset.depth || 0
     );
 
+  const offset =
+    (
+      scrollProgress - 0.5
+    ) *
+    depth *
+    window.innerHeight *
+    2;
 
-  const lerp = (
-    start,
-    end,
-    amount
-  ) =>
-    start +
-    (end - start) *
-    amount;
+  item.style.setProperty(
+    "--scroll-depth",
+    `${offset.toFixed(2)}px`
+  );
+});
 
+/* VARIÁVEL GLOBAL */
 
-  /* =========================================================
-     PROGRESSO DA PÁGINA
-  ========================================================== */
+document.documentElement.style.setProperty(
+  "--scroll-progress",
+  scrollProgress.toFixed(4)
+);
 
-  function calculateProgress() {
+/* VÍDEO */
 
-    const scrollHeight =
-      document.documentElement.scrollHeight;
+if (
+  metadataReady &&
+  Number.isFinite(duration) &&
+  duration > 0
+) {
+  targetTime =
+    duration * scrollProgress;
+}
+```
 
-    const viewportHeight =
-      window.innerHeight;
+}
 
-    const distance =
-      Math.max(
-        scrollHeight -
-          viewportHeight,
-        1
-      );
+/* =========================================================
+VÍDEO
+========================================================== */
 
-    return clamp(
-      window.scrollY /
-        distance,
-      0,
-      1
+function renderVideo() {
+animationFrame = null;
+
+```
+if (
+  !video ||
+  !metadataReady ||
+  !Number.isFinite(duration) ||
+  duration <= 0
+) {
+  return;
+}
+
+const easing =
+  reducedMotion
+    ? 1
+    : 0.09;
+
+renderedTime =
+  lerp(
+    renderedTime,
+    targetTime,
+    easing
+  );
+
+const safeTime =
+  clamp(
+    renderedTime,
+    0,
+    Math.max(
+      duration - 0.025,
+      0
+    )
+  );
+
+if (
+  Math.abs(
+    video.currentTime - safeTime
+  ) > 0.012
+) {
+  try {
+    video.currentTime =
+      safeTime;
+  } catch (error) {
+    /* Seek indisponível durante carregamento. */
+  }
+}
+
+if (
+  !reducedMotion &&
+  Math.abs(
+    targetTime - renderedTime
+  ) > 0.008
+) {
+  animationFrame =
+    window.requestAnimationFrame(
+      renderVideo
     );
+}
+```
+
+}
+
+function scheduleRender() {
+if (
+animationFrame === null &&
+metadataReady
+) {
+animationFrame =
+window.requestAnimationFrame(
+renderVideo
+);
+}
+}
+
+/* =========================================================
+SCROLL
+========================================================== */
+
+function handleScroll() {
+updateInterface();
+scheduleRender();
+}
+
+/* =========================================================
+RESIZE
+========================================================== */
+
+function handleResize() {
+updateInterface();
+scheduleRender();
+}
+
+/* =========================================================
+METADATA DO VÍDEO
+========================================================== */
+
+function handleMetadata() {
+if (!video) {
+return;
+}
+
+```
+duration =
+  video.duration;
+
+metadataReady =
+  Number.isFinite(duration) &&
+  duration > 0;
+
+if (!metadataReady) {
+  showFallback();
+  return;
+}
+
+const currentProgress =
+  calculateProgress();
+
+renderedTime =
+  duration * currentProgress;
+
+targetTime =
+  renderedTime;
+
+video.pause();
+
+if (stage) {
+  stage.classList.add(
+    "is-ready"
+  );
+}
+
+if (fallback) {
+  fallback.classList.remove(
+    "is-visible"
+  );
+}
+
+scheduleRender();
+```
+
+}
+
+/* =========================================================
+VÍDEO PRONTO
+========================================================== */
+
+function handleCanPlay() {
+if (stage) {
+stage.classList.add(
+"is-ready"
+);
+}
+
+```
+preventAutoplay();
+```
+
+}
+
+/* =========================================================
+FALLBACK
+========================================================== */
+
+function showFallback() {
+metadataReady = false;
+
+```
+if (stage) {
+  stage.classList.remove(
+    "is-ready"
+  );
+}
+
+if (fallback) {
+  fallback.classList.add(
+    "is-visible"
+  );
+}
+```
+
+}
+
+/* =========================================================
+IMPEDIR AUTOPLAY
+========================================================== */
+
+function preventAutoplay() {
+if (!video) {
+return;
+}
+
+```
+if (!video.paused) {
+  try {
+    video.pause();
+  } catch (error) {
+    /* Ignora erros específicos do navegador. */
   }
+}
+```
 
+}
 
-  /* =========================================================
-     INTERFACE
-  ========================================================== */
+/* =========================================================
+REVEAL
+========================================================== */
 
-  function updateInterface() {
+function setupReveal() {
+if (
+revealItems.length === 0
+) {
+return;
+}
 
-    scrollProgress =
-      calculateProgress();
+```
+/*
+  Se o navegador não tiver IntersectionObserver,
+  mostramos tudo.
+*/
 
-    const percentage =
-      Math.round(
-        scrollProgress * 100
-      );
-
-
-    /* -------------------------------------------------------
-       BARRA DE PROGRESSO
-    -------------------------------------------------------- */
-
-    if (progressFill) {
-
-      progressFill.style.height =
-        `${percentage}%`;
-    }
-
-
-    /* -------------------------------------------------------
-       PORCENTAGEM
-    -------------------------------------------------------- */
-
-    if (progressValue) {
-
-      progressValue.textContent =
-        `${String(
-          percentage
-        ).padStart(2, "0")}%`;
-    }
-
-
-    /* -------------------------------------------------------
-       HEADER
-    -------------------------------------------------------- */
-
-    if (header) {
-
-      header.classList.toggle(
-        "is-scrolled",
-        window.scrollY > 24
-      );
-    }
-
-
-    /* -------------------------------------------------------
-       PARALLAX
-    -------------------------------------------------------- */
-
-    depthItems.forEach((item) => {
-
-      const depth =
-        Number(
-          item.dataset.depth || 0
-        );
-
-
-      const offset =
-        (
-          scrollProgress -
-          0.5
-        ) *
-        depth *
-        window.innerHeight *
-        2;
-
-
-      /*
-        IMPORTANTE:
-
-        Não aplicamos transform
-        diretamente no elemento.
-
-        Apenas atualizamos a variável
-        CSS --scroll-depth.
-
-        O CSS fica responsável pelo
-        transform final.
-      */
-
-      item.style.setProperty(
-        "--scroll-depth",
-        `${offset.toFixed(2)}px`
-      );
-    });
-
-
-    /* -------------------------------------------------------
-       VARIÁVEL GLOBAL
-    -------------------------------------------------------- */
-
-    document.documentElement.style.setProperty(
-      "--scroll-progress",
-      scrollProgress.toFixed(4)
+if (
+  !("IntersectionObserver" in window)
+) {
+  revealItems.forEach((item) => {
+    item.classList.add(
+      "is-visible"
     );
-
-
-    /* -------------------------------------------------------
-       VÍDEO
-    -------------------------------------------------------- */
-
-    if (
-      metadataReady &&
-      Number.isFinite(duration) &&
-      duration > 0
-    ) {
-
-      targetTime =
-        duration *
-        scrollProgress;
-    }
-  }
-
-
-  /* =========================================================
-     RENDERIZAÇÃO DO VÍDEO
-  ========================================================== */
-
-  function renderVideo() {
-
-    animationFrame = null;
-
-
-    /*
-      Se o vídeo não estiver disponível,
-      simplesmente não fazemos nada.
-    */
-
-    if (
-      !video ||
-      !metadataReady ||
-      !Number.isFinite(duration) ||
-      duration <= 0
-    ) {
-
-      return;
-    }
-
-
-    const easing =
-      reducedMotion
-        ? 1
-        : 0.09;
-
-
-    renderedTime =
-      lerp(
-        renderedTime,
-        targetTime,
-        easing
-      );
-
-
-    const safeTime =
-      clamp(
-        renderedTime,
-        0,
-        Math.max(
-          duration -
-            0.025,
-          0
-        )
-      );
-
-
-    /*
-      Evita buscas desnecessárias
-      no vídeo.
-    */
-
-    if (
-      Math.abs(
-        video.currentTime -
-          safeTime
-      ) > 0.012
-    ) {
-
-      try {
-
-        video.currentTime =
-          safeTime;
-
-      } catch (error) {
-
-        /*
-          Alguns navegadores podem
-          rejeitar um seek durante
-          o carregamento.
-        */
-      }
-    }
-
-
-    /*
-      Continua suavizando a posição
-      enquanto houver diferença.
-    */
-
-    if (
-      !reducedMotion &&
-      Math.abs(
-        targetTime -
-          renderedTime
-      ) > 0.008
-    ) {
-
-      animationFrame =
-        window.requestAnimationFrame(
-          renderVideo
-        );
-    }
-  }
-
-
-  /* =========================================================
-     AGENDAR RENDERIZAÇÃO
-  ========================================================== */
-
-  function scheduleRender() {
-
-    if (
-      animationFrame === null
-    ) {
-
-      animationFrame =
-        window.requestAnimationFrame(
-          renderVideo
-        );
-    }
-  }
-
-
-  /* =========================================================
-     SCROLL
-  ========================================================== */
-
-  function handleScroll() {
-
-    updateInterface();
-
-    scheduleRender();
-  }
-
-
-  /* =========================================================
-     RESIZE
-  ========================================================== */
-
-  function handleResize() {
-
-    updateInterface();
-
-    scheduleRender();
-  }
-
-
-  /* =========================================================
-     METADATA DO VÍDEO
-  ========================================================== */
-
-  function handleMetadata() {
-
-    if (!video) {
-      return;
-    }
-
-
-    duration =
-      video.duration;
-
-
-    metadataReady =
-      Number.isFinite(duration) &&
-      duration > 0;
-
-
-    /*
-      Caso o vídeo não tenha duração válida,
-      usamos o fallback.
-    */
-
-    if (!metadataReady) {
-
-      showFallback();
-
-      return;
-    }
-
-
-    const currentProgress =
-      calculateProgress();
-
-
-    renderedTime =
-      duration *
-      currentProgress;
-
-
-    targetTime =
-      renderedTime;
-
-
-    if (stage) {
-
-      stage.classList.add(
-        "is-ready"
-      );
-    }
-
-
-    if (fallback) {
-
-      fallback.classList.remove(
-        "is-visible"
-      );
-    }
-
-
-    scheduleRender();
-  }
-
-
-  /* =========================================================
-     VÍDEO PRONTO
-  ========================================================== */
-
-  function handleCanPlay() {
-
-    if (stage) {
-
-      stage.classList.add(
-        "is-ready"
-      );
-    }
-
-
-    /*
-      Não iniciamos o vídeo.
-
-      Ele será controlado pela
-      posição da página.
-    */
-
-    preventAutoplay();
-  }
-
-
-  /* =========================================================
-     ERRO NO VÍDEO
-  ========================================================== */
-
-  function showFallback() {
-
-    metadataReady = false;
-
-
-    if (stage) {
-
-      stage.classList.remove(
-        "is-ready"
-      );
-    }
-
-
-    if (fallback) {
-
-      fallback.classList.add(
-        "is-visible"
-      );
-    }
-  }
-
-
-  /* =========================================================
-     IMPEDIR AUTOPLAY
-  ========================================================== */
-
-  function preventAutoplay() {
-
-    if (!video) {
-      return;
-    }
-
-
-    if (!video.paused) {
-
-      try {
-
-        video.pause();
-
-      } catch (error) {
-
-        /*
-          Ignora erros específicos
-          do navegador.
-        */
-      }
-    }
-  }
-
-
-  /* =========================================================
-     REVEAL
-  ========================================================== */
-
-  function setupReveal() {
-
-    /*
-      Se não houver elementos,
-      não precisamos configurar
-      o observer.
-    */
-
-    if (
-      revealItems.length === 0
-    ) {
-
-      return;
-    }
-
-
-    /*
-      Fallback para navegadores
-      sem IntersectionObserver.
-    */
-
-    if (
-      !(
-        "IntersectionObserver"
-        in window
-      )
-    ) {
-
-      revealItems.forEach(
-        (item) => {
-
-          item.classList.add(
-            "is-visible"
-          );
+  });
+
+  return;
+}
+
+const observer =
+  new IntersectionObserver(
+    (entries, observerInstance) => {
+      entries.forEach((entry) => {
+        if (
+          !entry.isIntersecting
+        ) {
+          return;
         }
-      );
 
-      return;
-    }
+        entry.target.classList.add(
+          "is-visible"
+        );
 
-
-    const observer =
-      new IntersectionObserver(
-        (
-          entries,
-          observerInstance
-        ) => {
-
-          entries.forEach(
-            (entry) => {
-
-              if (
-                !entry.isIntersecting
-              ) {
-
-                return;
-              }
-
-
-              entry.target.classList.add(
-                "is-visible"
-              );
-
-
-              observerInstance.unobserve(
-                entry.target
-              );
-            }
-          );
-        },
-        {
-          threshold: 0.08,
-
-          rootMargin:
-            "0px 0px -5% 0px"
-        }
-      );
-
-
-    revealItems.forEach(
-      (item) => {
-
-        observer.observe(item);
-      }
-    );
-  }
-
-
-  /* =========================================================
-     EVENTOS DO VÍDEO
-  ========================================================== */
-
-  if (video) {
-
-    video.addEventListener(
-      "loadedmetadata",
-      handleMetadata,
-      {
-        once: true
-      }
-    );
-
-
-    video.addEventListener(
-      "canplay",
-      handleCanPlay,
-      {
-        once: true
-      }
-    );
-
-
-    video.addEventListener(
-      "error",
-      showFallback,
-      {
-        once: true
-      }
-    );
-
-
-    video.addEventListener(
-      "play",
-      preventAutoplay
-    );
-
-
-    video.addEventListener(
-      "loadeddata",
-      preventAutoplay
-    );
-
-
-    video.addEventListener(
-      "ended",
-      preventAutoplay
-    );
-  }
-
-
-  /* =========================================================
-     EVENTOS DA JANELA
-  ========================================================== */
-
-  window.addEventListener(
-    "scroll",
-    handleScroll,
+        observerInstance.unobserve(
+          entry.target
+        );
+      });
+    },
     {
-      passive: true
+      threshold: 0.05,
+      rootMargin:
+        "0px 0px -5% 0px"
     }
   );
 
+revealItems.forEach((item) => {
+  observer.observe(item);
+});
+```
 
-  window.addEventListener(
-    "resize",
-    handleResize,
-    {
-      passive: true
+}
+
+/* =========================================================
+EVENTOS DO VÍDEO
+========================================================== */
+
+if (video) {
+video.addEventListener(
+"loadedmetadata",
+handleMetadata
+);
+
+```
+video.addEventListener(
+  "durationchange",
+  () => {
+    if (
+      !metadataReady &&
+      Number.isFinite(video.duration) &&
+      video.duration > 0
+    ) {
+      handleMetadata();
     }
-  );
+  }
+);
 
+video.addEventListener(
+  "canplay",
+  handleCanPlay,
+  { once: true }
+);
 
-  window.addEventListener(
-    "pageshow",
-    preventAutoplay
-  );
+video.addEventListener(
+  "error",
+  showFallback
+);
 
+video.addEventListener(
+  "play",
+  preventAutoplay
+);
 
-  /* =========================================================
-     INICIALIZAÇÃO
-  ========================================================== */
+video.addEventListener(
+  "loadeddata",
+  preventAutoplay
+);
 
-  setupReveal();
+video.addEventListener(
+  "ended",
+  preventAutoplay
+);
+```
 
+}
 
-  /*
-    Inicializa o parallax.
+/* =========================================================
+EVENTOS DA JANELA
+========================================================== */
 
-    Não aplicamos transform diretamente.
-    Apenas zeramos a variável CSS.
-  */
+window.addEventListener(
+"scroll",
+handleScroll,
+{ passive: true }
+);
 
-  depthItems.forEach(
-    (item) => {
+window.addEventListener(
+"resize",
+handleResize,
+{ passive: true }
+);
 
-      item.style.setProperty(
-        "--scroll-depth",
-        "0px"
-      );
-    }
-  );
+window.addEventListener(
+"pageshow",
+() => {
+preventAutoplay();
+updateInterface();
+}
+);
 
+/* =========================================================
+INICIALIZAÇÃO
+========================================================== */
 
-  /*
-    Garante que o vídeo não
-    comece sozinho.
-  */
+setupReveal();
 
-  preventAutoplay();
+depthItems.forEach((item) => {
+item.style.setProperty(
+"--scroll-depth",
+"0px"
+);
+});
 
+preventAutoplay();
 
-  /*
-    Calcula o estado inicial
-    da página.
-  */
+updateInterface();
 
-  updateInterface();
+/*
+Caso o navegador já tenha carregado
+os metadados antes do listener ser processado.
+*/
 
-
-  /*
-    Agenda o primeiro render
-    do vídeo, caso ele já esteja
-    disponível.
-  */
-
-  scheduleRender();
+if (
+video &&
+Number.isFinite(video.duration) &&
+video.duration > 0
+) {
+handleMetadata();
+}
 
 })();
