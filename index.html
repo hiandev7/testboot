@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="CleanBot — sistema inteligente de limpeza robótica com navegação, mapeamento e atualizações inteligentes."
+    />
+    <meta name="theme-color" content="#071016" />
+    <title>CleanBot — Limpeza robótica inteligente</title>
+    <link rel="preload" href="assets/video.mp4" as="video" type="video/mp4" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="video-stage" aria-hidden="true">
+      <video id="experience-video" preload="metadata" muted playsinline>
+        <source src="assets/video.mp4" type="video/mp4" />
+      </video>
+      <div class="video-tint"></div>
+      <div class="video-grain"></div>
+      <div class="video-fallback" id="video-fallback">
+        <div class="fallback-orb"></div>
+        <p>Visualização cinética indisponível</p>
+        <span>A experiência continua com a interface interativa.</span>
+      </div>
+    </div>
+
+    <div class="scroll-progress" aria-hidden="true">
+      <span class="progress-track"><span class="progress-fill" id="progress-fill"></span></span>
+      <span class="progress-value" id="progress-value">00%</span>
+    </div>
+
+    <header class="site-header">
+      <a class="brand" href="#inicio" aria-label="Ir para o início da CleanBot">
+        <span class="brand-mark"><i></i><i></i><i></i></span>
+        <span>CleanBot</span>
+      </a>
+      <nav aria-label="Navegação principal">
+        <a href="#recursos">Recursos</a>
+        <a href="#prototipo">Protótipo</a>
+        <a href="#equipe">Equipe</a>
+        <a href="#projeto">Projeto</a>
+      </nav>
+      <span class="header-status"><b></b>Sistema ativo</span>
+    </header>
+
+    <main>
+      <section class="panel hero" id="inicio" data-depth="0.04">
+        <div class="hero-copy reveal">
+          <p class="eyebrow"><span></span>Prototipagem autônoma · 01</p>
+          <h1>Limpeza que<br /><em>pensa no espaço.</em></h1>
+          <p class="hero-lead">O CleanBot percebe, decide e cuida. Um sistema de limpeza robótica criado para se mover com precisão pelo cotidiano.</p>
+          <a class="scroll-prompt" href="#recursos">
+            <span class="scroll-mouse"><i></i></span>
+            <span>Role para explorar</span>
+          </a>
+        </div>
+        <div class="hero-specimen reveal" data-depth="-0.035">
+          <div class="specimen-orbit orbit-one"></div>
+          <div class="specimen-orbit orbit-two"></div>
+          <div class="specimen-core">
+            <span>CB</span>
+            <small>01</small>
+          </div>
+          <div class="specimen-tag tag-location"><b></b>Posição estável</div>
+          <div class="specimen-tag tag-scan"><b></b>Varredura ativa</div>
+        </div>
+        <p class="hero-index">/ 001—005</p>
+      </section>
+
+      <section class="panel capabilities" id="recursos">
+        <div class="section-heading reveal">
+          <p class="eyebrow"><span></span>Capacidades essenciais</p>
+          <h2>Uma rotina mais leve,<br />guiada por <em>inteligência.</em></h2>
+          <p>Quatro sistemas atuam em sintonia para transformar ambientes em rotas limpas, seguras e eficientes.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card reveal" data-depth="0.025">
+            <span class="feature-number">01</span>
+            <div class="feature-icon movement-icon"><i></i><i></i><i></i></div>
+            <h3>Deslocamento</h3>
+            <p>Navegação contínua que acompanha o ambiente e encontra o caminho mais eficiente.</p>
+            <span class="feature-line"></span>
+            <small>Movimento preciso</small>
+          </article>
+          <article class="feature-card reveal" data-depth="-0.018">
+            <span class="feature-number">02</span>
+            <div class="feature-icon cleaning-icon"><i></i><i></i><i></i></div>
+            <h3>Limpeza</h3>
+            <p>Uma rotina de limpeza inteligente que age de forma consistente em cada percurso.</p>
+            <span class="feature-line"></span>
+            <small>Ciclo otimizado</small>
+          </article>
+          <article class="feature-card reveal" data-depth="0.02">
+            <span class="feature-number">03</span>
+            <div class="feature-icon mapping-icon"><i></i><i></i><i></i></div>
+            <h3>Mapeamento</h3>
+            <p>Leitura espacial para reconhecer áreas, organizar trajetos e ampliar a cobertura.</p>
+            <span class="feature-line"></span>
+            <small>Ambiente compreendido</small>
+          </article>
+          <article class="feature-card reveal" data-depth="-0.03">
+            <span class="feature-number">04</span>
+            <div class="feature-icon update-icon"><i></i><i></i><i></i></div>
+            <h3>Atualizações</h3>
+            <p>Evolução de software planejada para manter o sistema preparado para novos desafios.</p>
+            <span class="feature-line"></span>
+            <small>Inteligência em evolução</small>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel system-view" aria-labelledby="system-title">
+        <div class="system-copy reveal">
+          <p class="eyebrow"><span></span>Visão do sistema</p>
+          <h2 id="system-title">O espaço muda.<br /><em>A rota acompanha.</em></h2>
+          <p>O CleanBot converte a leitura do ambiente em decisões claras: identifica a posição, constrói uma rota e executa o ciclo de limpeza sem perder o contexto.</p>
+        </div>
+        <div class="system-diagram reveal" data-depth="0.035" aria-label="Fluxo do sistema: percepção, decisão e ação">
+          <div class="diagram-grid"></div>
+          <div class="diagram-node node-sense"><span>01</span><b>Perceber</b><small>Leitura espacial</small></div>
+          <div class="diagram-node node-decide"><span>02</span><b>Decidir</b><small>Rota dinâmica</small></div>
+          <div class="diagram-node node-act"><span>03</span><b>Agir</b><small>Limpeza contínua</small></div>
+          <svg class="diagram-path" viewBox="0 0 600 360" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M92 250 C165 120, 200 290, 292 178 S412 116, 506 150" />
+            <circle cx="92" cy="250" r="5" /><circle cx="292" cy="178" r="5" /><circle cx="506" cy="150" r="5" />
+          </svg>
+          <div class="diagram-sweep"></div>
+        </div>
+      </section>
+
+      <section class="panel prototype" id="prototipo">
+        <div class="section-heading reveal">
+          <p class="eyebrow"><span></span>Do conceito ao hardware</p>
+          <h2>O protótipo já<br /><em>roda de verdade.</em></h2>
+          <p>Chassi 4WD, ponte H, sensor ultrassônico triplo e escovas duplas: a primeira unidade física do CleanBot, montada e testada em bancada.</p>
+        </div>
+
+        <div class="prototype-showcase">
+          <figure class="prototype-hero reveal" data-depth="0.02">
+            <img src="assets/prototype/hero.jpg" alt="CleanBot montado sobre chassi 4WD, com Arduino, protoboard, bateria 9V e módulo ultrassônico triplo" loading="lazy" />
+            <figcaption><b></b>Unidade 01 · Bancada de testes</figcaption>
+          </figure>
+
+          <div class="prototype-grid">
+            <figure class="prototype-shot reveal">
+              <img src="assets/prototype/frente.jpg" alt="Vista frontal do CleanBot mostrando as escovas de limpeza duplas" loading="lazy" />
+              <figcaption>Frente</figcaption>
+            </figure>
+            <figure class="prototype-shot reveal">
+              <img src="assets/prototype/traseira.jpg" alt="Vista traseira do CleanBot mostrando o Arduino e a fiação" loading="lazy" />
+              <figcaption>Traseira</figcaption>
+            </figure>
+            <figure class="prototype-shot reveal">
+              <img src="assets/prototype/lateral.jpg" alt="Vista lateral do CleanBot evidenciando as rodas e o chassi" loading="lazy" />
+              <figcaption>Lateral</figcaption>
+            </figure>
+            <figure class="prototype-shot reveal">
+              <img src="assets/prototype/superior.jpg" alt="Vista superior do CleanBot mostrando a disposição dos componentes eletrônicos" loading="lazy" />
+              <figcaption>Vista superior</figcaption>
+            </figure>
+            <figure class="prototype-shot reveal">
+              <img src="assets/prototype/inferior.jpg" alt="Vista inferior do CleanBot mostrando o chassi e as escovas" loading="lazy" />
+              <figcaption>Vista inferior</figcaption>
+            </figure>
+            <figure class="prototype-shot reveal">
+              <img src="assets/prototype/perspectiva.jpg" alt="Vista em perspectiva do CleanBot montado" loading="lazy" />
+              <figcaption>Perspectiva</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <ul class="prototype-specs">
+          <li><span>Chassi</span>4WD acrílico</li>
+          <li><span>Controle</span>Arduino Uno</li>
+          <li><span>Sensores</span>Ultrassônico triplo HC-SR04</li>
+          <li><span>Limpeza</span>Escovas duplas frontais</li>
+          <li><span>Energia</span>Bateria 9V</li>
+        </ul>
+      </section>
+
+      <section class="panel team" id="equipe">
+        <div class="section-heading team-heading reveal">
+          <p class="eyebrow"><span></span>Pessoas por trás do protótipo</p>
+          <h2>Uma equipe que constrói<br /><em>movimento com propósito.</em></h2>
+        </div>
+        <div class="team-grid">
+          <article class="team-card reveal"><span>01</span><h3>Jônatas</h3><p>Gestor</p></article>
+          <article class="team-card reveal"><span>02</span><h3>Saulo</h3><p>Analista de Requisitos</p></article>
+          <article class="team-card reveal"><span>03</span><h3>David</h3><p>Design</p></article>
+          <article class="team-card reveal"><span>04</span><h3>Victória</h3><p>Design</p></article>
+          <article class="team-card reveal"><span>05</span><h3>Luis Hian</h3><p>Desenvolvedor</p></article>
+          <article class="team-card reveal"><span>06</span><h3>Luma</h3><p>Desenvolvedora · Implementação</p></article>
+          <article class="team-card reveal"><span>07</span><h3>Léo</h3><p>Testes</p></article>
+          <article class="team-card reveal"><span>08</span><h3>Leanderson</h3><p>Testes</p></article>
+          <article class="team-card reveal"><span>09</span><h3>Albert</h3><p>Implementação</p></article>
+        </div>
+      </section>
+
+      <section class="panel project" id="projeto">
+        <div class="project-glow"></div>
+        <div class="project-copy reveal">
+          <p class="eyebrow"><span></span>Sobre o projeto</p>
+          <h2>Tecnologia que libera<br />tempo para o que <em>importa.</em></h2>
+          <p>CleanBot é um protótipo de sistema inteligente de limpeza robótica. Ele une deslocamento autônomo, mapeamento do ambiente, ciclos de limpeza e atualizações de software em uma experiência simples, confiável e preparada para evoluir.</p>
+          <div class="project-notes">
+            <span><b></b>Experiência guiada por rolagem</span>
+            <span><b></b>Concepção segura e eficiente</span>
+          </div>
+        </div>
+        <div class="closing-mark reveal" data-depth="-0.025"><span>CB</span><small>Concebido para o próximo movimento.</small></div>
+      </section>
+    </main>
+
+    <footer>
+      <span>CleanBot / Protótipo conceitual</span>
+      <span>Deslize para revisitar a jornada</span>
+    </footer>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>
