@@ -1920,37 +1920,79 @@ footer {
 
 
 /* =========================================================
-   REVEAL
+REVEAL
 ========================================================= */
 
+.reveal {
+--reveal-y: 0px;
+
+opacity: 1;
+filter: none;
+
+transform:
+translate3d(
+0,
+calc(
+var(--reveal-y) +
+var(--scroll-depth, 0px)
+),
+0
+);
+}
+
 /*
-   IMPORTANTE:
-
-   O conteúdo é VISÍVEL por padrão.
-
-   Somente quando o JS adiciona "js-ready"
-   a animação de entrada é ativada.
-
-   Isso impede que o site fique vazio se o
-   JavaScript falhar no celular.
+O conteúdo só fica inicialmente oculto
+quando o JavaScript realmente carregou.
 */
 
-.reveal {
-  --reveal-y: 0px;
+.js-ready .reveal {
+--reveal-y: 30px;
 
-  opacity: 1;
+opacity: 0;
 
-  filter: none;
+filter: blur(9px);
 
-  transform:
-    translate3d(
-      0,
-      calc(
-        var(--reveal-y) +
-        var(--scroll-depth, 0px)
-      ),
-      0
-    );
+transform:
+translate3d(
+0,
+calc(
+var(--reveal-y) +
+var(--scroll-depth, 0px)
+),
+0
+);
+
+transition:
+opacity 850ms cubic-bezier(.2, .8, .2, 1),
+transform 850ms cubic-bezier(.2, .8, .2, 1),
+filter 850ms ease;
+}
+
+.js-ready .reveal.is-visible {
+--reveal-y: 0px;
+
+opacity: 1;
+
+filter: blur(0);
+
+transform:
+translate3d(
+0,
+var(--scroll-depth, 0px),
+0
+);
+}
+
+/*
+SEGURANÇA MOBILE:
+se o JS carregar mas o IntersectionObserver
+demorar, o primeiro conteúdo continua aparecendo.
+*/
+
+@media (max-width: 650px) {
+.js-ready .hero .reveal {
+transition-duration: 600ms;
+}
 }
 
 
