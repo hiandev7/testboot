@@ -1,604 +1,588 @@
 (() => {
-"use strict";
+  "use strict";
 
-/* =========================================================
-ELEMENTOS PRINCIPAIS
-========================================================== */
+  /* =========================================================
+     ELEMENTOS
+  ========================================================== */
 
-const video = document.querySelector("#experience-video");
-const stage = document.querySelector(".video-stage");
-const fallback = document.querySelector("#video-fallback");
+  const body = document.body;
 
-const progressFill = document.querySelector("#progress-fill");
-const progressValue = document.querySelector("#progress-value");
+  const video = document.querySelector("#experience-video");
+  const stage = document.querySelector(".video-stage");
+  const fallback = document.querySelector("#video-fallback");
 
-const header = document.querySelector(".site-header");
+  const progressFill =
+    document.querySelector("#progress-fill");
 
-const depthItems = [
-...document.querySelectorAll("[data-depth]")
-];
+  const progressValue =
+    document.querySelector("#progress-value");
 
-const revealItems = [
-...document.querySelectorAll(".reveal")
-];
+  const header =
+    document.querySelector(".site-header");
 
-const reducedMotion = window.matchMedia(
-"(prefers-reduced-motion: reduce)"
-).matches;
+  const depthItems = [
+    ...document.querySelectorAll("[data-depth]")
+  ];
 
-/* =========================================================
-ESTADO
-========================================================== */
+  const revealItems = [
+    ...document.querySelectorAll(".reveal")
+  ];
 
-let duration = 0;
-let targetTime = 0;
-let renderedTime = 0;
+  const reducedMotion =
+    window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
 
-let scrollProgress = 0;
 
-let animationFrame = null;
+  /* =========================================================
+     ESTADO
+  ========================================================== */
 
-let isMetadataReady = false;
+  let duration = 0;
+  let targetTime = 0;
+  let renderedTime = 0;
 
-/* =========================================================
-UTILITÁRIOS
-========================================================== */
+  let scrollProgress = 0;
 
-const clamp = (value, min, max) => {
-return Math.min(Math.max(value, min), max);
-};
+  let animationFrame = null;
 
-const lerp = (start, end, amount) => {
-return start + (end - start) * amount;
-};
+  let metadataReady = false;
 
-/* =========================================================
-PROGRESSO DA PÁGINA
-========================================================== */
 
-function calculateProgress() {
-const documentHeight =
-document.documentElement.scrollHeight;
+  /* =========================================================
+     UTILITÁRIOS
+  ========================================================== */
 
-```
-const viewportHeight =
-  window.innerHeight;
+  const clamp = (value, min, max) =>
+    Math.min(Math.max(value, min), max);
 
-const scrollableDistance = Math.max(
-  documentHeight - viewportHeight,
-  1
-);
 
-return clamp(
-  window.scrollY / scrollableDistance,
-  0,
-  1
-);
-```
+  const lerp = (start, end, amount) =>
+    start + (end - start) * amount;
 
-}
 
-/* =========================================================
-ATUALIZAÇÃO DA INTERFACE
-========================================================== */
+  /* =========================================================
+     PROGRESSO
+  ========================================================== */
 
-function updateInterface() {
+  function calculateProgress() {
 
-```
-scrollProgress = calculateProgress();
+    const scrollHeight =
+      document.documentElement.scrollHeight;
 
-const percentage = Math.round(
-  scrollProgress * 100
-);
+    const viewportHeight =
+      window.innerHeight;
 
+    const distance =
+      Math.max(
+        scrollHeight - viewportHeight,
+        1
+      );
 
-/* -----------------------------------------
-   BARRA DE PROGRESSO
------------------------------------------ */
-
-if (progressFill) {
-  progressFill.style.height =
-    `${percentage}%`;
-}
-
-
-if (progressValue) {
-  progressValue.textContent =
-    `${String(percentage).padStart(2, "0")}%`;
-}
-
-
-/* -----------------------------------------
-   HEADER
------------------------------------------ */
-
-if (header) {
-  header.classList.toggle(
-    "is-scrolled",
-    window.scrollY > 24
-  );
-}
-
-
-/* -----------------------------------------
-   PARALLAX
------------------------------------------ */
-
-/*
-  IMPORTANTE:
-
-  O parallax agora utiliza uma variável CSS
-  em vez de sobrescrever diretamente o
-  transform do elemento.
-
-  Isso evita conflitos com:
-  - reveal
-  - grid
-  - posicionamento mobile
-  - animações
-*/
-
-depthItems.forEach((item) => {
-
-  const depth =
-    Number(item.dataset.depth || 0);
-
-  const offset =
-    (scrollProgress - 0.5) *
-    depth *
-    window.innerHeight *
-    2;
-
-  item.style.setProperty(
-    "--scroll-depth",
-    `${offset.toFixed(2)}px`
-  );
-
-});
-
-
-/* -----------------------------------------
-   VARIÁVEL GLOBAL DO SCROLL
------------------------------------------ */
-
-document.documentElement.style.setProperty(
-  "--scroll-progress",
-  scrollProgress.toFixed(4)
-);
-
-
-/* -----------------------------------------
-   TEMPO DO VÍDEO
------------------------------------------ */
-
-if (isMetadataReady) {
-  targetTime =
-    duration * scrollProgress;
-}
-```
-
-}
-
-/* =========================================================
-RENDERIZAÇÃO DO VÍDEO
-========================================================== */
-
-function renderVideo() {
-
-```
-animationFrame = null;
-
-
-if (
-  !isMetadataReady ||
-  !Number.isFinite(duration) ||
-  duration <= 0
-) {
-  return;
-}
-
-
-const easing =
-  reducedMotion
-    ? 1
-    : 0.09;
-
-
-renderedTime = lerp(
-  renderedTime,
-  targetTime,
-  easing
-);
-
-
-const safeTime = clamp(
-  renderedTime,
-  0,
-  Math.max(duration - 0.025, 0)
-);
-
-
-/*
-  Evita realizar seeks desnecessários.
-*/
-
-if (
-  Math.abs(video.currentTime - safeTime) >
-  0.012
-) {
-
-  try {
-
-    video.currentTime = safeTime;
-
-  } catch (error) {
-
-    /*
-      Alguns navegadores podem rejeitar
-      um seek durante alterações no pipeline.
-    */
-
+    return clamp(
+      window.scrollY / distance,
+      0,
+      1
+    );
   }
 
-}
+
+  /* =========================================================
+     INTERFACE
+  ========================================================== */
+
+  function updateInterface() {
+
+    scrollProgress =
+      calculateProgress();
+
+    const percentage =
+      Math.round(
+        scrollProgress * 100
+      );
 
 
-/*
-  Continua suavizando enquanto o usuário
-  ainda estiver se deslocando pelo vídeo.
-*/
+    /* PROGRESSO */
 
-if (
-  Math.abs(targetTime - renderedTime) >
-    0.008 &&
-  !reducedMotion
-) {
-
-  animationFrame =
-    window.requestAnimationFrame(
-      renderVideo
-    );
-
-}
-```
-
-}
-
-/* =========================================================
-SOLICITAR RENDERIZAÇÃO
-========================================================== */
-
-function scheduleRender() {
-
-```
-if (animationFrame === null) {
-
-  animationFrame =
-    window.requestAnimationFrame(
-      renderVideo
-    );
-
-}
-```
-
-}
-
-/* =========================================================
-SCROLL
-========================================================== */
-
-function handleScroll() {
-
-```
-updateInterface();
-
-scheduleRender();
-```
-
-}
-
-/* =========================================================
-RESIZE
-========================================================== */
-
-function handleResize() {
-
-```
-/*
-  Recalcula tudo depois de uma alteração
-  de tamanho da janela.
-
-  Isso é especialmente importante no mobile.
-*/
-
-updateInterface();
-
-scheduleRender();
-```
-
-}
-
-/* =========================================================
-METADATA DO VÍDEO
-========================================================== */
-
-function handleMetadata() {
-
-```
-duration = video.duration;
-
-isMetadataReady =
-  Number.isFinite(duration) &&
-  duration > 0;
+    if (progressFill) {
+      progressFill.style.height =
+        `${percentage}%`;
+    }
 
 
-if (!isMetadataReady) {
-  showFallback();
-  return;
-}
+    if (progressValue) {
+      progressValue.textContent =
+        `${String(percentage).padStart(2, "0")}%`;
+    }
 
 
-/*
-  Posiciona o vídeo imediatamente no ponto
-  correspondente ao scroll atual.
-*/
+    /* HEADER */
 
-renderedTime =
-  duration * calculateProgress();
-
-targetTime =
-  renderedTime;
+    if (header) {
+      header.classList.toggle(
+        "is-scrolled",
+        window.scrollY > 24
+      );
+    }
 
 
-if (stage) {
-  stage.classList.add("is-ready");
-}
+    /* PARALLAX */
 
+    depthItems.forEach((item) => {
 
-if (fallback) {
-  fallback.classList.remove(
-    "is-visible"
-  );
-}
-
-
-scheduleRender();
-```
-
-}
-
-/* =========================================================
-VÍDEO PRONTO
-========================================================== */
-
-function handleCanPlay() {
-
-```
-if (stage) {
-  stage.classList.add("is-ready");
-}
-```
-
-}
-
-/* =========================================================
-FALLBACK DO VÍDEO
-========================================================== */
-
-function showFallback() {
-
-```
-isMetadataReady = false;
-
-if (stage) {
-  stage.classList.remove(
-    "is-ready"
-  );
-}
-
-if (fallback) {
-  fallback.classList.add(
-    "is-visible"
-  );
-}
-```
-
-}
-
-/* =========================================================
-IMPEDIR AUTOPLAY
-========================================================== */
-
-function preventAutoplay() {
-
-```
-if (!video) {
-  return;
-}
-
-if (!video.paused) {
-  video.pause();
-}
-```
-
-}
-
-/* =========================================================
-REVEAL / ANIMAÇÕES DE ENTRADA
-========================================================== */
-
-if ("IntersectionObserver" in window) {
-
-```
-const revealObserver =
-  new IntersectionObserver(
-    (entries, observer) => {
-
-      entries.forEach((entry) => {
-
-        if (!entry.isIntersecting) {
-          return;
-        }
-
-
-        entry.target.classList.add(
-          "is-visible"
+      const depth =
+        Number(
+          item.dataset.depth || 0
         );
 
+      const offset =
+        (
+          scrollProgress - 0.5
+        ) *
+        depth *
+        window.innerHeight *
+        2;
 
-        observer.unobserve(
-          entry.target
+      item.style.setProperty(
+        "--scroll-depth",
+        `${offset.toFixed(2)}px`
+      );
+
+    });
+
+
+    /* CSS GLOBAL */
+
+    document.documentElement.style.setProperty(
+      "--scroll-progress",
+      scrollProgress.toFixed(4)
+    );
+
+
+    /* VÍDEO */
+
+    if (metadataReady) {
+
+      targetTime =
+        duration * scrollProgress;
+
+    }
+  }
+
+
+  /* =========================================================
+     VÍDEO
+  ========================================================== */
+
+  function renderVideo() {
+
+    animationFrame = null;
+
+    if (
+      !video ||
+      !metadataReady ||
+      !Number.isFinite(duration) ||
+      duration <= 0
+    ) {
+      return;
+    }
+
+
+    const easing =
+      reducedMotion
+        ? 1
+        : 0.09;
+
+
+    renderedTime =
+      lerp(
+        renderedTime,
+        targetTime,
+        easing
+      );
+
+
+    const safeTime =
+      clamp(
+        renderedTime,
+        0,
+        Math.max(
+          duration - 0.025,
+          0
+        )
+      );
+
+
+    if (
+      Math.abs(
+        video.currentTime -
+        safeTime
+      ) > 0.012
+    ) {
+
+      try {
+
+        video.currentTime =
+          safeTime;
+
+      } catch (error) {
+
+        /*
+          Alguns navegadores podem
+          recusar o seek durante o
+          carregamento do vídeo.
+        */
+
+      }
+    }
+
+
+    if (
+      !reducedMotion &&
+      Math.abs(
+        targetTime -
+        renderedTime
+      ) > 0.008
+    ) {
+
+      animationFrame =
+        window.requestAnimationFrame(
+          renderVideo
+        );
+    }
+  }
+
+
+  function scheduleRender() {
+
+    if (
+      animationFrame === null
+    ) {
+
+      animationFrame =
+        window.requestAnimationFrame(
+          renderVideo
+        );
+    }
+  }
+
+
+  /* =========================================================
+     SCROLL
+  ========================================================== */
+
+  function handleScroll() {
+
+    updateInterface();
+
+    scheduleRender();
+  }
+
+
+  /* =========================================================
+     RESIZE
+  ========================================================== */
+
+  function handleResize() {
+
+    updateInterface();
+
+    scheduleRender();
+  }
+
+
+  /* =========================================================
+     METADATA DO VÍDEO
+  ========================================================== */
+
+  function handleMetadata() {
+
+    if (!video) {
+      return;
+    }
+
+    duration =
+      video.duration;
+
+
+    metadataReady =
+      Number.isFinite(duration) &&
+      duration > 0;
+
+
+    if (!metadataReady) {
+
+      showFallback();
+
+      return;
+    }
+
+
+    const currentProgress =
+      calculateProgress();
+
+
+    renderedTime =
+      duration *
+      currentProgress;
+
+
+    targetTime =
+      renderedTime;
+
+
+    if (stage) {
+      stage.classList.add(
+        "is-ready"
+      );
+    }
+
+
+    if (fallback) {
+      fallback.classList.remove(
+        "is-visible"
+      );
+    }
+
+
+    scheduleRender();
+  }
+
+
+  /* =========================================================
+     VÍDEO PRONTO
+  ========================================================== */
+
+  function handleCanPlay() {
+
+    if (stage) {
+
+      stage.classList.add(
+        "is-ready"
+      );
+    }
+  }
+
+
+  /* =========================================================
+     ERRO NO VÍDEO
+  ========================================================== */
+
+  function showFallback() {
+
+    metadataReady = false;
+
+    if (stage) {
+
+      stage.classList.remove(
+        "is-ready"
+      );
+    }
+
+    if (fallback) {
+
+      fallback.classList.add(
+        "is-visible"
+      );
+    }
+  }
+
+
+  /* =========================================================
+     IMPEDIR AUTOPLAY
+  ========================================================== */
+
+  function preventAutoplay() {
+
+    if (!video) {
+      return;
+    }
+
+    if (!video.paused) {
+
+      video.pause();
+    }
+  }
+
+
+  /* =========================================================
+     REVEAL
+  ========================================================== */
+
+  function setupReveal() {
+
+    /*
+      Se o navegador não suporta
+      IntersectionObserver, simplesmente
+      deixamos tudo visível.
+    */
+
+    if (
+      !("IntersectionObserver" in window)
+    ) {
+
+      revealItems.forEach((item) => {
+
+        item.classList.add(
+          "is-visible"
         );
 
       });
 
-    },
-    {
-      threshold: 0.12,
-      rootMargin: "0px 0px -7%"
+      return;
     }
+
+
+    const observer =
+      new IntersectionObserver(
+        (entries, observerInstance) => {
+
+          entries.forEach((entry) => {
+
+            if (
+              !entry.isIntersecting
+            ) {
+              return;
+            }
+
+
+            entry.target.classList.add(
+              "is-visible"
+            );
+
+
+            observerInstance.unobserve(
+              entry.target
+            );
+
+          });
+
+        },
+        {
+          threshold: 0.08,
+
+          rootMargin:
+            "0px 0px -5% 0px"
+        }
+      );
+
+
+    revealItems.forEach((item) => {
+
+      observer.observe(item);
+
+    });
+  }
+
+
+  /* =========================================================
+     INICIALIZAÇÃO SEGURA
+  ========================================================== */
+
+  /*
+    Só depois que todas as funções foram
+    preparadas nós ativamos o modo JS.
+
+    Portanto:
+
+    JS funcionando:
+      .reveal -> anima
+
+    JS quebrado:
+      .reveal -> continua visível
+  */
+
+  if (body) {
+
+    body.classList.add(
+      "js-ready"
+    );
+  }
+
+
+  setupReveal();
+
+
+  /* =========================================================
+     EVENTOS DO VÍDEO
+  ========================================================== */
+
+  if (video) {
+
+    video.addEventListener(
+      "loadedmetadata",
+      handleMetadata,
+      { once: true }
+    );
+
+
+    video.addEventListener(
+      "canplay",
+      handleCanPlay,
+      { once: true }
+    );
+
+
+    video.addEventListener(
+      "error",
+      showFallback,
+      { once: true }
+    );
+
+
+    video.addEventListener(
+      "play",
+      preventAutoplay
+    );
+  }
+
+
+  /* =========================================================
+     EVENTOS DA JANELA
+  ========================================================== */
+
+  window.addEventListener(
+    "scroll",
+    handleScroll,
+    { passive: true }
   );
 
 
-revealItems.forEach((item) => {
-
-  revealObserver.observe(item);
-
-});
-```
-
-} else {
-
-```
-/*
-  Fallback para navegadores antigos:
-  simplesmente exibe os elementos.
-*/
-
-revealItems.forEach((item) => {
-
-  item.classList.add(
-    "is-visible"
+  window.addEventListener(
+    "resize",
+    handleResize,
+    { passive: true }
   );
 
-});
-```
 
-}
-
-/* =========================================================
-EVENTOS DO VÍDEO
-========================================================== */
-
-if (video) {
-
-```
-video.addEventListener(
-  "loadedmetadata",
-  handleMetadata,
-  { once: true }
-);
+  window.addEventListener(
+    "pageshow",
+    preventAutoplay
+  );
 
 
-video.addEventListener(
-  "canplay",
-  handleCanPlay,
-  { once: true }
-);
+  /* =========================================================
+     ESTADO INICIAL DO PARALLAX
+  ========================================================== */
+
+  depthItems.forEach((item) => {
+
+    item.style.setProperty(
+      "--scroll-depth",
+      "0px"
+    );
+
+  });
 
 
-video.addEventListener(
-  "error",
-  showFallback,
-  { once: true }
-);
+  /* =========================================================
+     START
+  ========================================================== */
 
+  preventAutoplay();
 
-/*
-  Se alguma outra lógica tentar dar play,
-  o vídeo continua sendo controlado pelo scroll.
-*/
+  updateInterface();
 
-video.addEventListener(
-  "play",
-  preventAutoplay
-);
-```
-
-}
-
-/* =========================================================
-EVENTOS DA PÁGINA
-========================================================== */
-
-window.addEventListener(
-"scroll",
-handleScroll,
-{ passive: true }
-);
-
-window.addEventListener(
-"resize",
-handleResize,
-{ passive: true }
-);
-
-window.addEventListener(
-"pageshow",
-preventAutoplay
-);
-
-/* =========================================================
-INICIALIZAÇÃO
-========================================================== */
-
-/*
-Não aplicamos transform diretamente aqui.
-
-```
-O CSS deve controlar o transform dos elementos
-usando:
-
-  translate3d(
-    0,
-    var(--scroll-depth, 0px),
-    0
-  )
-
-Dessa forma o JavaScript não destrói o
-posicionamento responsivo.
-```
-
-*/
-
-depthItems.forEach((item) => {
-
-```
-item.style.setProperty(
-  "--scroll-depth",
-  "0px"
-);
-```
-
-});
-
-/*
-Garante que o vídeo não comece reproduzindo.
-*/
-
-preventAutoplay();
-
-/*
-Primeira atualização da interface.
-*/
-
-updateInterface();
-
-/*
-Primeira renderização.
-*/
-
-scheduleRender();
+  scheduleRender();
 
 })();
-
