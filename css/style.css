@@ -318,7 +318,8 @@ footer {
   text-transform: uppercase;
 }
 
-.header-status b {
+.header-status b,
+.project-notes b {
   width: 6px;
   height: 6px;
   flex: 0 0 auto;
@@ -512,6 +513,9 @@ h2 em {
   letter-spacing: 0.08em;
 }
 
+
+/* HERO SPECIMEN */
+
 .hero-specimen {
   position: absolute;
   top: 50%;
@@ -536,17 +540,24 @@ h2 em {
   inset: 10%;
   border: 1px solid rgba(156, 255, 224, 0.3);
   border-radius: 50%;
-  box-shadow: inset 0 0 45px rgba(87, 235, 212, 0.1);
+  box-shadow:
+    inset 0 0 45px
+    rgba(87, 235, 212, 0.1);
 }
 
 .orbit-one {
-  transform: rotateX(68deg) rotateZ(-18deg);
+  transform:
+    rotateX(68deg)
+    rotateZ(-18deg);
 }
 
 .orbit-two {
   inset: 22%;
-  border-color: rgba(106, 239, 231, 0.34);
-  transform: rotateX(68deg) rotateZ(42deg);
+  border-color:
+    rgba(106, 239, 231, 0.34);
+  transform:
+    rotateX(68deg)
+    rotateZ(42deg);
 }
 
 .specimen-core {
@@ -604,38 +615,12 @@ h2 em {
 }
 
 .specimen-tag {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
-  border: 1px solid rgba(193, 255, 239, 0.22);
-  border-radius: 3px;
-  background: rgba(6, 30, 30, 0.44);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
-  backdrop-filter: blur(8px);
-  color: #d9f7ee;
-  font: 0.54rem var(--font-mono);
-  white-space: nowrap;
+  display: none;
 }
 
-.specimen-tag b {
-  width: 5px;
-  height: 5px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: var(--mint);
-  box-shadow: 0 0 8px var(--mint);
-}
-
-.tag-location {
-  top: 23%;
-  left: -1%;
-}
-
+.tag-location,
 .tag-scan {
-  right: -8%;
-  bottom: 24%;
+  display: none;
 }
 
 
@@ -1142,6 +1127,10 @@ h2 em {
   max-width: 860px;
 }
 
+.methodology-intro > p:last-child {
+  max-width: 620px;
+}
+
 .methodology-grid {
   display: grid;
   grid-template-columns:
@@ -1348,53 +1337,6 @@ h2 em {
   animation: pulse 2s infinite;
 }
 
-.closing-mark {
-  position: absolute;
-  top: 50%;
-  right: clamp(24px, 11vw, 180px);
-  z-index: 5;
-  display: grid;
-  width: min(22vw, 260px);
-  aspect-ratio: 1;
-  place-content: center;
-  border: 1px solid rgba(176, 255, 231, 0.35);
-  border-radius: 50%;
-  background:
-    radial-gradient(
-      circle,
-      rgba(66, 205, 178, 0.18),
-      rgba(4, 29, 31, 0.35) 60%
-    );
-  box-shadow:
-    inset 0 0 65px rgba(99, 255, 201, 0.13),
-    0 0 95px rgba(75, 255, 196, 0.14);
-  transform:
-    translate3d(
-      0,
-      calc(
-        -50% +
-        var(--scroll-depth, 0px)
-      ),
-      0
-    );
-  text-align: center;
-}
-
-.closing-mark span {
-  font:
-    700 clamp(2.1rem, 5vw, 5rem) / 1
-    var(--font-display);
-  letter-spacing: -0.12em;
-}
-
-.closing-mark small {
-  width: 150px;
-  margin: 12px auto 0;
-  color: #b5d0ca;
-  font-size: 0.56rem;
-  line-height: 1.5;
-}
-
 
 /* REVEAL */
 
@@ -1442,6 +1384,7 @@ h2 em {
 /* TABLET */
 
 @media (max-width: 1100px) {
+
   :root {
     --page-padding: clamp(22px, 5vw, 60px);
   }
@@ -1520,16 +1463,13 @@ h2 em {
   .project-copy {
     width: 70%;
   }
-
-  .closing-mark {
-    width: 210px;
-  }
 }
 
 
 /* MOBILE */
 
 @media (max-width: 650px) {
+
   :root {
     --page-padding: 19px;
   }
@@ -1544,10 +1484,6 @@ h2 em {
   .site-header {
     min-height: 66px;
     padding: 16px 18px;
-  }
-
-  .site-header nav {
-    display: none;
   }
 
   .brand {
@@ -1628,14 +1564,6 @@ h2 em {
   .hero-index {
     right: var(--page-padding);
     bottom: 24px;
-  }
-
-  .tag-location {
-    left: -3%;
-  }
-
-  .tag-scan {
-    right: 2%;
   }
 
   .feature-grid {
@@ -1743,10 +1671,6 @@ h2 em {
     left: 20%;
     width: 60%;
     opacity: 0.25;
-  }
-
-  .prototype {
-    min-height: auto;
   }
 
   .prototype-showcase {
@@ -1862,18 +1786,6 @@ h2 em {
     opacity: 0.42;
   }
 
-  .closing-mark {
-    top: auto;
-    right: 4%;
-    bottom: 7%;
-    width: 105px;
-    transform: none;
-  }
-
-  .closing-mark small {
-    display: none;
-  }
-
   footer {
     flex-direction: column;
     gap: 10px;
@@ -1888,6 +1800,7 @@ h2 em {
 /* SMALL MOBILE */
 
 @media (max-width: 380px) {
+
   :root {
     --page-padding: 16px;
   }
@@ -1931,6 +1844,7 @@ h2 em {
 /* MOTION */
 
 @media (prefers-reduced-motion: reduce) {
+
   html {
     scroll-behavior: auto;
   }
